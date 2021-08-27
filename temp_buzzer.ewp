@@ -2101,6 +2101,9 @@
         <name>$PROJ_DIR$\pwm.h</name>
     </file>
     <file>
+        <name>$PROJ_DIR$\README</name>
+    </file>
+    <file>
         <name>$PROJ_DIR$\TM4C123GH6PM.h</name>
     </file>
 </project>
