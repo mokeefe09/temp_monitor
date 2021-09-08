@@ -30,7 +30,13 @@ void adc_init(void){
 
 
 uint16_t adc_sample(void){
+	// Will be used to hold "garbage" reads form the sample sequencer FIFO
 	uint16_t garbage_val;	
+
+	// Since we halt sampling at the end of this function, this line is likely
+	// superfluous. But we will halt sampling at the start of the function as
+	// well just to be safe.
+	ADC0->PSSI	&=	~(1U << 3);
 
 	// If result FIFO is full, read the register until it is empty
 	while (ADC0->SSFSTAT3 & (1U << 12)){
@@ -43,7 +49,7 @@ uint16_t adc_sample(void){
 	while (ADC0->SSFSTAT3 & (1U << 8)) {};
 	ADC0->PSSI	&=	~(1U << 3);
 
+	// Return the value from the sample sequencer, which will be the voltage 
+	// provided by the voltage divider.
 	return ADC0->SSFIFO3;
-
-	
 }
