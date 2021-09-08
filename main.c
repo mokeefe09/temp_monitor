@@ -10,7 +10,7 @@ int main(void){
 	float thermistor;
   
 	// TODO: ONLY DEBUGGING
-	int count;
+	// int count;
   
 	adc_init();
 	pwm_init();
@@ -28,12 +28,12 @@ int main(void){
  
 		if (thermistor < THRESHOLD){
 			// Enable the PWM signal
-			PWM0->ENABLE |= (1U << 0);
+			PWM0->ENABLE |= (1U << 4);
 
 		}
 		else{
 			// Disable the PWM signal
-			PWM0->ENABLE &= ~(1U << 0);
+			PWM0->ENABLE &= ~(1U << 4);
 		}
 	}
 }
