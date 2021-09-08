@@ -2092,6 +2092,21 @@
         <name>$PROJ_DIR$\adc.h</name>
     </file>
     <file>
+        <name>$PROJ_DIR$\delay.c</name>
+    </file>
+    <file>
+        <name>$PROJ_DIR$\delay.h</name>
+    </file>
+    <file>
+        <name>$PROJ_DIR$\io_map.h</name>
+    </file>
+    <file>
+        <name>$PROJ_DIR$\lcd.c</name>
+    </file>
+    <file>
+        <name>$PROJ_DIR$\lcd.h</name>
+    </file>
+    <file>
         <name>$PROJ_DIR$\main.c</name>
     </file>
     <file>
@@ -2102,6 +2117,12 @@
     </file>
     <file>
         <name>$PROJ_DIR$\README</name>
+    </file>
+    <file>
+        <name>$PROJ_DIR$\systick.c</name>
+    </file>
+    <file>
+        <name>$PROJ_DIR$\systick.h</name>
     </file>
     <file>
         <name>$PROJ_DIR$\TM4C123GH6PM.h</name>
