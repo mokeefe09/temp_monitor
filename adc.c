@@ -18,32 +18,32 @@ void adc_init(void){
 	// Disable sample sequencer 3 while configuring
 	ADC0->ACTSS   &= (1U << 3);
 
-	// Continuously sample
-	ADC0->EMUX    = (0xF << 12);
+	// Processor initiates sampling
+	ADC0->EMUX    = 0x0;
 
 	// Sample from AIN1 (GPIOE pin 3)
 	ADC0->SSMUX3  = 0x0;
 
 	// Enable sample sequencer 3
 	ADC0->ACTSS   = (1U << 3);
-
-	// Initiate sampling
-	ADC0->PSSI    = (1U << 3);
 }
 
-uint8_t adc_fifo_empty(void){
-	// If FIFO is empty return true
-	if (ADC0->SSFSTAT3 & EMPTY_BIT)
-	{
-		return 1;
-	}
-	// If FIFO not empty, return false
-	else{
-		return 0;
-	}
-}
 
-uint16_t adc_fifo_read(void){
-	// Return value in ADC FIFO.
+uint16_t adc_sample(void){
+	uint16_t garbage_val;	
+
+	// If result FIFO is full, read the register until it is empty
+	while (ADC0->SSFSTAT3 & (1U << 12)){
+		garbage_val = ADC0->SSFIFO3;	
+	}
+	
+	// Now that the FIFO is empty, we can initiate sampling. Sample until the FIFO
+	// has something in it. Then disable sampling and return that value.
+	ADC0->PSSI	|= 	(1U << 3);
+	while (ADC0->SSFSTAT3 & (1U << 8)) {};
+	ADC0->PSSI	&=	~(1U << 3);
+
 	return ADC0->SSFIFO3;
+
+	
 }
