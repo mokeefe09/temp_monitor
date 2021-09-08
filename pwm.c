@@ -1,24 +1,24 @@
 #include "pwm.h"
-#include "TM4C123GH6PM.h"
 
 void pwm_init(void){
 /*
-Initializes pwm on GPIO pin E4 (M0 PWM4). 
+Initializes PWM on GPIOE pin 4. Utilizes a 50% duty cycle with a frequency of 
+4,000 KHz to sound a piezo buzzer.
 */
 	// Enable clock to PWM 0 module
 	SYSCTL->RCGCPWM = (1U << 0);
 	  
-	// Enable clock to GPIOE port
-	SYSCTL->RCGCGPIO |= (1U << 4);
+	// Enable clock to pwm port
+	SYSCTL->RCGCGPIO |= PWM_PIN;
 	  
-	// Enable alternate functions for GPIOE pin 4
-	GPIOE->AFSEL |= (1U << 4);
+	// Enable alternate functions for pwm pin
+	PWM_PORT->AFSEL |= PWM_PIN;
 	  
-	// Choose the specific alternate function for GPIOE pin 4 (PWM)
-	GPIOE->PCTL |= (0x4 << 16);
+	// Choose the specific alternate function for pwm pin
+	PWM_PORT->PCTL |= (0x4 << 16);
 	  
-	// Enable digigtal functions for GPIOE pin 4
-	GPIOE->DEN |= (1U << 4);
+	// Enable digigtal functions for PWM_PORT pin 4
+	PWM_PORT->DEN |= PWM_PIN;
 	  
 	// Use a pre-scaler (clock divisor) of 32 for the PWM clock. The system
 	// clock is 16MHz. Divided by 32, the frequeny of the PWM clock becomes

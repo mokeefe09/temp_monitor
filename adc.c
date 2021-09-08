@@ -11,9 +11,9 @@ void adc_init(void){
   
 	// Set pin E3 to use alternate functions, disable its digital settings, and
 	// enable analog function
-	GPIOE->AFSEL  = ADC_PIN;
-	GPIOE->DEN    &= ~ADC_PIN;
-	GPIOE->AMSEL  = ADC_PIN;
+	ADC_PORT->AFSEL  |= ADC_PIN;
+	ADC_PORT->DEN    &= ~ADC_PIN;
+	ADC_PORT->AMSEL  |= ADC_PIN;
 	  
 	// Disable sample sequencer 3 while configuring
 	ADC0->ACTSS   &= (1U << 3);
