@@ -14,7 +14,7 @@
 #define ROOM_R		(float)10000
 #define B_VALUE		(float)3950
 #define CELS_CONV       ( (float)9 / (float)5 )
-#define MAX_TEMP	79
+#define MAX_TEMP	30
 #define STR_LEN		30
 
 volatile uint32_t ms_value = 0;
@@ -46,7 +46,7 @@ int main(void){
 	while (1){
 		if (ms_value >= deadline){
 			// Task will run once per second
-			deadline += 1000U;
+			deadline += 5000U;
 
 			// Raw voltage value from ADC stored in adc_value
 			adc_value = adc_sample();
@@ -77,17 +77,15 @@ int main(void){
 			fahr_temp = (cels_temp * CELS_CONV) + (float)32;
 			integer_temp = (int8_t)fahr_temp;
                         
-                        // TODO: Just for debugging. Remove everything between here and next comment
-                        new_temp = integer_temp * 100;
-                        if (new_temp)
-                          deadline = 0;
-
-			
-			// TODO: This is the end of the debugging section. Everything below here is legit
-			// project code.
-			if (integer_temp > MAX_TEMP) {
+			if (integer_temp >= MAX_TEMP) {
 				// Clear display before writing?
 				// print temperature
+				// Convert integer temperature to string version and store in display_string.
+				// Will contain the string version of the integer followed by "degrees"
+				itoa_temp(integer_temp, display_string, degrees_string, STR_LEN);
+				lcd_display(0, 0, current_string);
+				lcd_display(0, 1, display_string);
+
 
 				// Turn off buzzer
 			}
