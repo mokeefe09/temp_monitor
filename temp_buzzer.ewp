@@ -2101,6 +2101,12 @@
         <name>$PROJ_DIR$\io_map.h</name>
     </file>
     <file>
+        <name>$PROJ_DIR$\itoa_temp.c</name>
+    </file>
+    <file>
+        <name>$PROJ_DIR$\itoa_temp.h</name>
+    </file>
+    <file>
         <name>$PROJ_DIR$\lcd.c</name>
     </file>
     <file>

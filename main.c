@@ -2,6 +2,7 @@
 #include "pwm.h"
 #include "lcd.h"
 #include "systick.h"
+#include "itoa_temp.h"
 #include "TM4C123GH6PM.h"
 #include <stdint.h>
 #include <math.h>
