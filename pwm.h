@@ -5,3 +5,5 @@
 #define PWM_PIN		PIN4
 
 void pwm_init(void);
+void pwm_enable(void);
+void pwm_disable(void);

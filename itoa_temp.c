@@ -1,7 +1,26 @@
 #include "itoa_temp.h"
 
 void itoa_temp(int8_t num, char* output, char* degrees_str, uint8_t str_len){
-	
+/*
+Converts an integer to a string which holds the ascii representation of the integer
+followed by a space and the word "degrees". 
+ 
+Receives:	int8_t num: The number to be converted to a string. Can be negative,
+		zero, or positive.
+
+		char* output: Pointer to memory that will hold the string representation
+		of the num param.
+
+		char* degrees_str: Pointer to string that reads "degrees."
+
+		uint8_t str_len: Size of memory, in bytes, pointed to by output param.
+		Used to zero-out string at the start of the function.
+
+
+Returns:	Nothing. Result is stored in memory pointed to by output param
+*/
+
+
 	char* degrees_ptr;
 	uint8_t digit_to_add;
 	uint8_t positive_num;

@@ -50,3 +50,11 @@ Initializes PWM on GPIOE pin 4. Utilizes a 50% duty cycle with a frequency of
 	// Disable the PWM signal. Will be enabled in the main function.
 	PWM0->ENABLE &= ~(1U << 4);
 }
+
+void pwm_enable(void){
+	PWM0->ENABLE |= (1U << 4);
+}
+
+void pwm_disable(void){
+	PWM0->ENABLE &= ~(1U << 4);
+}

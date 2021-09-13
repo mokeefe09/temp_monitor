@@ -1,3 +1,12 @@
+/*
+Author: Michael O'Keefe
+Date: 09/13/2021
+Description: Device that digitally displays temperature on an LCD. When a programmable maximum
+	     temperature is exceeded, a piezo buzzer alarm is triggered and a warning message
+	     is displayed on the screen. 
+*/
+
+
 #include "adc.h"
 #include "pwm.h"
 #include "lcd.h"
@@ -7,46 +16,66 @@
 #include <stdint.h>
 #include <math.h>
 
-#define THRESHOLD 	(float)9100
-#define RES_1		(float)10000
-#define ADC_MAX_VAL	(float)4095
-#define ROOM_T		(float)298.15
-#define ROOM_R		(float)10000
-#define B_VALUE		(float)3950
-#define CELS_CONV       ( (float)9 / (float)5 )
-#define MAX_TEMP	78
-#define STR_LEN		30
-#define DL_INTERVAL	2000U
+#define RES_1		(float)10000			// Resistance of 1st volt divider resistor
+#define ADC_MAX_VAL	(float)4095			// Resolution of ADC
+#define ROOM_T		(float)298.15			// "Room temperature" in Kelvin
+#define ROOM_R		(float)10000			// Resistance of thermistor at room temp
+#define B_VALUE		(float)3950			// B-value of thermistor
+#define CELS_CONV       ( (float)9 / (float)5 )		// Celsius conversion factor
+#define MAX_TEMP	78				// The max temp before buzzer and warning
 
+#define STR_LEN		30				// Length of buffer used to store string
+							// that displays temperature.
+
+#define DL_INTERVAL	2000U				// Delay in between temp check tasks (in ms)
+
+// This value is incremented every 1ms in a SysTick timer. It is used to determine if the deadline
+// interval between tasks has been reached, as well as in delay functions. Since the value is
+// modified in an ISR, it should be declared volatile.
 volatile uint32_t ms_value = 0;
 
 int main(void){
-	uint32_t	deadline = 100U;
-	uint16_t 	adc_value;
-	float 		thermistor;
-	float 		kelvin_temp;
+	uint32_t	deadline = 100U;		// Task will run for first time when ms_value
+							// reaches 100.
+
+	uint16_t 	adc_value;			// 12-bit voltage reading from ADC.
+
+	float 		thermistor;			// Resistance of thermistor (changes when temp
+							// changes
+
+	float 		kelvin_temp;			// Temperature placeholders
 	float 		cels_temp;
 	float 		fahr_temp;
 	int8_t 		integer_temp;
-	uint8_t		max_flag = 0;
 
-	char 		display_string[STR_LEN] = {0};
-	char*		current_string = "Current Temp:";
+	uint8_t		max_flag = 0;			// If this flag is 1, then the last time through
+							// the task we were above the max temp. If 0, we
+							// were at or below the max temp. The flag is
+							// needed to know if we should clear screen before
+							// displaying the next string.
+
+	char 		display_string[STR_LEN] = {0};		// Buffer to hold temperature string
+
+	
+	char*		current_string = "Current Temp:";	// Other display strings
 	char* 		degrees_string = "DEG";
 	char*		warning_string1 = "WARNING: Max";
 	char*		warning_string2 = "temp exceeded";
 
+	// Initialize peripherals
 	SysTick_init();
 	lcd_init();
 	adc_init();
 	pwm_init();
 
 	while (1){
+		// Has the appropriate # of ms passed before we run the task again?
 		if (ms_value >= deadline){
+
 			// Set new deadline for task
 			deadline += DL_INTERVAL;
 
-			// Raw voltage value from ADC stored in adc_value
+			// Raw 12-bit voltage value from ADC stored in adc_value
 			adc_value = adc_sample();
 
 			// Calculate the value of the thermistor (knowing the thermistor
@@ -75,41 +104,48 @@ int main(void){
 			fahr_temp = (cels_temp * CELS_CONV) + (float)32;
 			integer_temp = (int8_t)fahr_temp;
 
-			//lcd_send_cmd(DISP_CLR);
-                        
+                        // Is the integer representation of the temperature at or below the max?
 			if (integer_temp <= MAX_TEMP) {
+
+				// If we were above the max temp in the previous task, clear the display
+				// to make sure there are no display errors from leftover data and clear
+				// the flag
 				if (max_flag == 1){
 					lcd_send_cmd(DISP_CLR);
+					max_flag = 0;
 				}
-				// Clear display before writing?
 
-				// print temperature
 				// Convert integer temperature to string version and store in display_string.
 				// Will contain the string version of the integer followed by "degrees"
 				itoa_temp(integer_temp, display_string, degrees_string, STR_LEN);
+
+				// Write the temperature to the lcd display
 				lcd_display(0, 0, current_string);
 				lcd_display(0, 1, display_string);
 
 				// Turn off buzzer
-				PWM0->ENABLE &= ~(1U << 4);
-				max_flag = 0;
+				pwm_disable();
 			}
 			else{
 
+				// If we were at or below the max temp in the previous task, clear the display
+				// to make sure there are no display errors from leftover data and set the
+				// flag.
 				if (max_flag == 0){
 					lcd_send_cmd(DISP_CLR);
+					max_flag = 1;
 				}
-				// Clear display before writing?
 
 				// print warning strings
 				lcd_display(0, 0, warning_string1);
 				lcd_display(0, 1, warning_string2);
 
 				// Sound buzzer
-				PWM0->ENABLE |= (1U << 4);
-				max_flag = 1;
+				pwm_enable();
 			}
-			
-		}
-	}
-}
+
+		} // if (ms_value >= deadline)
+
+	} // while(1)
+
+} // main

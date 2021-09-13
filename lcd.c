@@ -7,13 +7,15 @@ CITATION:
 This driver was adapted from code posted in the article "Introduction to
 Microcontrollers - Adding Some Real-World Hardware" on embeddedrelated.com,
 written by Mike Silva: https://www.embeddedrelated.com/showarticle/490.php
-
-
 */
 
 #include "lcd.h"
 
 void lcd_init(void){
+/*
+Initializes the LCD to a known state from any state. At the end of this sequence
+the LCD is on and cleared, ready to receive instructions.
+*/
 
 // Intialization of GPIO pins
 
