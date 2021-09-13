@@ -1,7 +1,10 @@
 /*
 Author: Michael O'Keefe
+Date: 09/13/2021
 Description: Driver to interface a 16x2 HD44780-style LCD with the
-	     TM4c123GH6PM mcu from Texas Instruments.
+	     TM4c123GH6PM mcu from Texas Instruments. See Sitronix ST0766
+	     Dot Matrix LCD Controller/Driver datasheet for details on 
+	     LCD operation.
 
 CITATION:
 This driver was adapted from code posted in the article "Introduction to
@@ -14,32 +17,35 @@ written by Mike Silva: https://www.embeddedrelated.com/showarticle/490.php
 void lcd_init(void){
 /*
 Initializes the LCD to a known state from any state. At the end of this sequence
-the LCD is on and cleared, ready to receive instructions.
+the LCD is on and cleared, ready to receive instructions. Exclusively uses the
+GPIOB port for the data bits, EN bit, and RS bit. The R/W bit is tied to ground
+it hardware because we will exclusively be writing to the LCD.
 */
 
 // Intialization of GPIO pins
 
-	// Enable clock to the LCD GPIO port
-	SYSCTL->RCGCGPIO	|=	LCD_PORT_CLOCK;
+	// Enable clock to the GPIOB port
+	SYSCTL->RCGCGPIO	|=	(1U << 1);
 
 	// Set direction of LCD pins to output
-	LCD_PORT->DIR		|=	(LCD_DATA_BITS | EN_BIT | RS_BIT);
+	GPIOB->DIR		|=	(LCD_DATA_BITS | EN_BIT | RS_BIT);
 
 	// Disable alternate functions of LCD pins. Will use as simple GPIO pins
-	LCD_PORT->AFSEL 	&= 	~(LCD_DATA_BITS | EN_BIT | RS_BIT);
+	GPIOB->AFSEL 		&= 	~(LCD_DATA_BITS | EN_BIT | RS_BIT);
 
 	// Enable digital functions of LCD pins
-	LCD_PORT->DEN		|=	(LCD_DATA_BITS | EN_BIT | RS_BIT);
+	GPIOB->DEN		|=	(LCD_DATA_BITS | EN_BIT | RS_BIT);
 	
 	// Mask interrupts to prevent unwanted interrupts
-	LCD_PORT->IM		&=	~(LCD_DATA_BITS | EN_BIT | RS_BIT);
+	GPIOB->IM		&=	~(LCD_DATA_BITS | EN_BIT | RS_BIT);
 
 	// Clear enable bit and R/W bit before beginning LCD init sequence
-	LCD_PORT->DATA		&= 	~(EN_BIT | RS_BIT);
+	GPIOB->DATA		&= 	~(EN_BIT | RS_BIT);
 
 
 // Initialization of LCD device. Must send the same 4-bit sequence, 0011, to the
-// lcd 3 times, with specific delay periods in-between.
+// lcd 3 times, with specific delay periods in-between. See datasheet for detailed
+// steps of initialization sequence: Sitronix ST7066 Dot Matrix LCD Controller/Driver
 
 	// Obligatory delay before initalization
 	ms_delay(15);
@@ -96,31 +102,47 @@ the LCD is on and cleared, ready to receive instructions.
 }
 
 void lcd_port_data(uint8_t d){
-
-	LCD_PORT->DATA = (LCD_PORT->DATA & ~LCD_DATA_BITS) | (d & 0xF0);
+/*
+Prepares data to be sent to the LCD by setting the 4 GPIO data pins
+connected to the LCD data lines to the upper 4 bits of the input parameter, d.
+Note, the lower four bits of the GPIO data register are not affected by this
+operation.
+*/
+	// First, clear the LCD data bits. Then, OR them with the high 4 bits
+	// of the input parameter, d. This is the data that will be sent to the
+	// LCD.
+	GPIOB->DATA = (GPIOB->DATA & ~LCD_DATA_BITS) | (d & 0xF0);
 }
 
 void lcd_strobe(void){
+/*
+Sends data from the GPIO data pins to the LCD by setting the EN bit. 
+*/
 	// Set the enable bit, which will send the 4 bits of data
 	// on the gpio data bits to the lcd.
-	LCD_PORT->DATA	|=	EN_BIT;
+	GPIOB->DATA	|=	EN_BIT;
 
 	// Delay only has to be 150ns, but we will just use ms delay b/c we
 	// do not have strict timing constraints.
 	ms_delay(1);
 
 	// Clear the enable bit
-	LCD_PORT->DATA	&=	~EN_BIT;
+	GPIOB->DATA	&=	~EN_BIT;
 
 	// Delay after clearing enable bit delay would only have to be 10ns
 	ms_delay(1);
 }
 
 void lcd_send_cmd(uint8_t cmd){
+/*
+Sends a command to the LCD. We are in 4-bit mode, so we must set the data register
+twice and send two 4-bit transmissions. The high 4 bits of the 8 bit instruction
+are sent first.
+*/
 	// Since we are sending an instruction into the instruction register of
 	// the LCD, we must set the RS bit low. Setting the RS bit high would
 	// result in a write to the data register of the LCD.
-	LCD_PORT->DATA	&=	~RS_BIT;
+	GPIOB->DATA	&=	~RS_BIT;
 
 	// Send high 4 bits of data
 	lcd_port_data(cmd & 0xF0);
@@ -136,6 +158,19 @@ void lcd_send_cmd(uint8_t cmd){
 }
 
 void lcd_display(int x, int y, const char *str){
+/*
+Displays a string on the 16x2 LCD screen.
+
+Receives:	int x: The horizontal (x-coord) position the message will start from. Can
+		be in the interval [0, 15].
+
+		int y: The row the message will start on. For the 1st row, input 0. For
+		the 2nd row, input 1. There are only 2 rows on the screen.
+
+		const char *str: Pointer to the string that will be displayed.
+
+Returns: 	Nothing
+*/
 	int n = LCD_WIDTH - x;
 	uint8_t addr;
 
@@ -173,8 +208,14 @@ void lcd_display(int x, int y, const char *str){
 }
 
 void lcd_putc(uint8_t c){
+/*
+Writes a character to the LCD. Note, when we are sending instructions the RS bit is
+low. When we write data with this function, we set the RS bit high. Since we are in
+4-bit mode, we have to set the GPIO data and send it twice, with the upper 4 bits
+being sent first.
+*/
 	// Set the RS bit b/c we will be writing to the data register of the lcd
-	LCD_PORT->DATA	|=	RS_BIT;
+	GPIOB->DATA	|=	RS_BIT;
 
 	// Send high 4 bits
 	lcd_port_data(c & 0xf0);

@@ -1,3 +1,7 @@
+/*
+PWM driver. Written for a specific project. Not intended for general use.
+*/
+
 #include "pwm.h"
 
 void pwm_init(void){
@@ -12,13 +16,13 @@ Initializes PWM on GPIOE pin 4. Utilizes a 50% duty cycle with a frequency of
 	SYSCTL->RCGCGPIO |= PWM_PIN;
 	  
 	// Enable alternate functions for pwm pin
-	PWM_PORT->AFSEL |= PWM_PIN;
+	GPIOE->AFSEL |= PWM_PIN;
 	  
 	// Choose the specific alternate function for pwm pin
-	PWM_PORT->PCTL |= (0x4 << 16);
+	GPIOE->PCTL |= (0x4 << 16);
 	  
-	// Enable digigtal functions for PWM_PORT pin 4
-	PWM_PORT->DEN |= PWM_PIN;
+	// Enable digigtal functions for GPIOE pin 4
+	GPIOE->DEN |= PWM_PIN;
 	  
 	// Use a pre-scaler (clock divisor) of 32 for the PWM clock. The system
 	// clock is 16MHz. Divided by 32, the frequeny of the PWM clock becomes

@@ -1,1 +1,22 @@
-Temperature Buzzer project
+Temperature Monitor Project
+
+Digital temperature representation is derived from the resistance of a thermistor 
+in a voltage divider circuit. Simple logic is then performed to determine if the
+temperature has exceeded a maximum temperature threshold. If so, a piezo buzzer is
+sounded using pulse-width modulation on a GPIO pin and a warning message appears
+on the LCD. If the temperature is equal to or below the threshold, the piezo buzzer
+does not sound and the temperature is displayed in Fahrenheit on the LCD.
+
+This is a bare-metal project. Each driver was made from scratch, with the exception
+of the LCD driver, which was adapted from a driver available in an online tutorial
+by Mike Silva at EmbeddedRelated.com. The name of the article in which the driver
+appears is "Introduction to Microcontrollers - Adding Some Real-World Hardware".
+
+Compiler/Toolchain: IAR embedded workbench
+Development board: TI EK-TM4C123GXL
+Microprocessor: TM4C123GH6PM
+
+YouTube: https://youtu.be/x-U7_jtrCIY 
+GitHub: https://github.com/mokeefe09/temp_monitor
+
+

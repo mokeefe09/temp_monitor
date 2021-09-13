@@ -1,6 +1,12 @@
+/*
+SysTick driver. Written for a specific project. Not intended for general use.
+*/
+
 #include "systick.h"
 
 void SysTick_Handler(void){
+	// The systick fires each millisecond. Increemnt the global ms_value
+	// variable every ms.
 	ms_value++;
 }
 

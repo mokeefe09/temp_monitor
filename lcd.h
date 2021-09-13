@@ -6,8 +6,6 @@
 #include "io_map.h"
 #include "delay.h"
 
-#define LCD_PORT_CLOCK	(1U << 1)
-#define	LCD_PORT	GPIOB
 #define LCD_DATA_BITS	(PIN4 | PIN5 | PIN6 | PIN7)	
 #define EN_BIT		PIN3
 #define RS_BIT		PIN2

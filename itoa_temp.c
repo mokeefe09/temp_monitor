@@ -1,3 +1,9 @@
+/*
+Author: Michael O'Keefe
+Date: 09/13/2021
+Description: itoa function to convert integer to string and display as a temperature
+*/
+
 #include "itoa_temp.h"
 
 void itoa_temp(int8_t num, char* output, char* degrees_str, uint8_t str_len){
