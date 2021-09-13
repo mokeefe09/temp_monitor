@@ -14,8 +14,9 @@
 #define ROOM_R		(float)10000
 #define B_VALUE		(float)3950
 #define CELS_CONV       ( (float)9 / (float)5 )
-#define MAX_TEMP	30
+#define MAX_TEMP	78
 #define STR_LEN		30
+#define DL_INTERVAL	2000U
 
 volatile uint32_t ms_value = 0;
 
@@ -27,16 +28,13 @@ int main(void){
 	float 		cels_temp;
 	float 		fahr_temp;
 	int8_t 		integer_temp;
+	uint8_t		max_flag = 0;
 
 	char 		display_string[STR_LEN] = {0};
 	char*		current_string = "Current Temp:";
-	char* 		degrees_string = "degrees";
+	char* 		degrees_string = "DEG";
 	char*		warning_string1 = "WARNING: Max";
 	char*		warning_string2 = "temp exceeded";
-	
-        
-        // TODO: Remove
-        int8_t new_temp;
 
 	SysTick_init();
 	lcd_init();
@@ -45,8 +43,8 @@ int main(void){
 
 	while (1){
 		if (ms_value >= deadline){
-			// Task will run once per second
-			deadline += 5000U;
+			// Set new deadline for task
+			deadline += DL_INTERVAL;
 
 			// Raw voltage value from ADC stored in adc_value
 			adc_value = adc_sample();
@@ -76,9 +74,15 @@ int main(void){
 			cels_temp = kelvin_temp - (float)273.15;
 			fahr_temp = (cels_temp * CELS_CONV) + (float)32;
 			integer_temp = (int8_t)fahr_temp;
+
+			//lcd_send_cmd(DISP_CLR);
                         
-			if (integer_temp >= MAX_TEMP) {
+			if (integer_temp <= MAX_TEMP) {
+				if (max_flag == 1){
+					lcd_send_cmd(DISP_CLR);
+				}
 				// Clear display before writing?
+
 				// print temperature
 				// Convert integer temperature to string version and store in display_string.
 				// Will contain the string version of the integer followed by "degrees"
@@ -86,14 +90,24 @@ int main(void){
 				lcd_display(0, 0, current_string);
 				lcd_display(0, 1, display_string);
 
-
 				// Turn off buzzer
+				PWM0->ENABLE &= ~(1U << 4);
+				max_flag = 0;
 			}
 			else{
 
+				if (max_flag == 0){
+					lcd_send_cmd(DISP_CLR);
+				}
 				// Clear display before writing?
+
 				// print warning strings
+				lcd_display(0, 0, warning_string1);
+				lcd_display(0, 1, warning_string2);
+
 				// Sound buzzer
+				PWM0->ENABLE |= (1U << 4);
+				max_flag = 1;
 			}
 			
 		}
