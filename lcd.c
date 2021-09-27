@@ -80,7 +80,7 @@ it hardware because we will exclusively be writing to the LCD.
 	// Only will use 4 data lines to transmit data
 	lcd_port_data(DISP_4BITS);
 	lcd_strobe();
-	ms_delay(1);
+	tiny_delay(200);
 
 	// Use 4 data lines AND a 2-line display (16x2)
 	lcd_send_cmd(DISP_CONFIG);
@@ -122,15 +122,14 @@ Sends data from the GPIO data pins to the LCD by setting the EN bit.
 	// on the gpio data bits to the lcd.
 	GPIOB->DATA	|=	EN_BIT;
 
-	// Delay only has to be 150ns, but we will just use ms delay b/c we
-	// do not have strict timing constraints.
-	ms_delay(1);
+	// Delay only has to be 150ns. 
+	nano_delay();
 
 	// Clear the enable bit
 	GPIOB->DATA	&=	~EN_BIT;
 
 	// Delay after clearing enable bit delay would only have to be 10ns
-	ms_delay(1);
+	nano_delay();
 }
 
 void lcd_send_cmd(uint8_t cmd){
@@ -141,7 +140,10 @@ are sent first.
 */
 	// Since we are sending an instruction into the instruction register of
 	// the LCD, we must set the RS bit low. Setting the RS bit high would
-	// result in a write to the data register of the LCD.
+	// result in a write to the data register of the LCD. Requires 30ns of
+	// delay before we set the enable bit, but since we will call the lcd_port_data
+	// function before setting the enable bit in lcd_strobe(), we will definitely
+	// have enough of a delay.
 	GPIOB->DATA	&=	~RS_BIT;
 
 	// Send high 4 bits of data
@@ -152,8 +154,8 @@ are sent first.
 	lcd_port_data((cmd & 0xF) << 4);
 	lcd_strobe();
 
-	// A 1ms delay covers all instructions except clear display and return home
-	ms_delay(1);
+	// A 50us delay covers all instructions except clear display and return home
+	tiny_delay(200);
 
 }
 
