@@ -6,7 +6,9 @@
 // Shared global variable. Defined in main.c. Incremented every 1ms by a SysTick interrupt.
 extern volatile uint32_t ms_value;
 
-// Function prototype
+// Function prototypes
 void ms_delay(uint32_t d);
+void nano_delay(void);
+void tiny_delay(uint32_t d);
 
 #endif

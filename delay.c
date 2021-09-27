@@ -16,3 +16,10 @@ ms_value, once every ms.
 	}
 
 }
+
+void nano_delay(void){
+}
+
+void tiny_delay(uint32_t d){
+	while (--d != 0){}
+}
